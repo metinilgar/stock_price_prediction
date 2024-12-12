@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  dio: ^5.7.0
+  syncfusion_flutter_charts: ^28.1.33
 
 dev_dependencies:
   flutter_test:
