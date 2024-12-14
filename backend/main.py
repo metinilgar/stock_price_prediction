@@ -17,7 +17,7 @@ class StockRequest(BaseModel):
     symbol: str  # Hisse senedi sembolü
 
 # Yardımcı fonksiyonlar
-def get_stock_data(symbol):
+def get_stock_price_data(symbol):
     stock = yf.Ticker(symbol)
     historical_data = stock.history(period="5y")
     historical_data.reset_index(inplace=True)
@@ -87,8 +87,8 @@ def predict_future(request: StockRequest):
     try:
         # 1. Hisse senedi verisini çek
         symbol = request.symbol
-        historical_data = get_stock_data(symbol)
-
+        historical_data = get_stock_price_data(symbol)
+        
         # 2. Veriyi işleme
         df = historical_data[['Date', 'Close']].copy()
         df['Date'] = pd.to_datetime(df['Date']).dt.date
