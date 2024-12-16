@@ -1,4 +1,5 @@
-import 'package:finance_app/src/screens/stock_chart_page.dart';
+import 'package:finance_app/src/features/stock_chart/presentation/stock_chart_screen.dart';
+import 'package:finance_app/src/utils/theme/theme.dart';
 import 'package:flutter/material.dart';
 
 class MainApp extends StatelessWidget {
@@ -7,7 +8,15 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: StockChartPage(),
+      debugShowCheckedModeBanner: false,
+
+      // Light theme
+      theme: KAppTheme.kLightTheme,
+
+      // Dark theme
+      darkTheme: KAppTheme.kDarkTheme,
+
+      home: const StockChartScreen(),
     );
   }
 }
