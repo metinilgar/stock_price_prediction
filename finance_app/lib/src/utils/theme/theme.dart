@@ -1,4 +1,5 @@
 import 'package:finance_app/src/utils/constants/colors.dart';
+import 'package:finance_app/src/utils/theme/custom_theme/elevated_button_theme.dart';
 import 'package:flutter/material.dart';
 
 class KAppTheme {
@@ -22,7 +23,7 @@ class KAppTheme {
     // navigationBarTheme: KNavigationBarTheme.kLightNavigationBarTheme,
 
     // ElevatedButton theme
-    // elevatedButtonTheme: KElevatedButtonTheme.kLightElevatedButtonTheme,
+    elevatedButtonTheme: KElevatedButtonTheme.kLightElevatedButtonTheme,
   );
 
   // Dark theme
@@ -43,6 +44,6 @@ class KAppTheme {
     // navigationBarTheme: KNavigationBarTheme.kDarkNavigationBarTheme,
 
     // ElevatedButton theme
-    // elevatedButtonTheme: KElevatedButtonTheme.kDarkElevatedButtonTheme,
+    elevatedButtonTheme: KElevatedButtonTheme.kDarkElevatedButtonTheme,
   );
 }
