@@ -20,7 +20,7 @@ class _StockChartScreenState extends State<StockChartScreen> {
   Future<List<StockData>> fetchStockData(String symbol) async {
     Dio dio = Dio();
     final response = await dio.post(
-      'http://10.0.2.2:8000/predict',
+      'http://10.0.2.2:8000/stock/predict',
       data: json.encode({'symbol': symbol}),
       options: Options(
         headers: {'Content-Type': 'application/json'},
