@@ -1,7 +1,6 @@
 import 'package:finance_app/src/features/stock_chart/models/stock_history_data.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:intl/intl.dart';
 
 class StockChart extends StatelessWidget {
   const StockChart({
