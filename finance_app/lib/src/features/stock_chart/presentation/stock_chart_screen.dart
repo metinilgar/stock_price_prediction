@@ -1,37 +1,38 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
-import 'package:finance_app/src/features/stock_chart/models/stock_data.dart';
+import 'package:finance_app/src/features/stock_chart/models/stock_history_data.dart';
+import 'package:finance_app/src/features/stock_chart/presentation/horizontal_period_list.dart';
 import 'package:finance_app/src/features/stock_chart/presentation/stock_chart.dart';
+import 'package:finance_app/src/features/stock_chart/presentation/stock_info.dart';
 import 'package:flutter/material.dart';
 
 class StockChartScreen extends StatefulWidget {
   const StockChartScreen({super.key});
 
   @override
-  _StockChartScreenState createState() => _StockChartScreenState();
+  StockChartScreenState createState() => StockChartScreenState();
 }
 
-class _StockChartScreenState extends State<StockChartScreen> {
-  late Future<List<StockData>> _stockData;
+class StockChartScreenState extends State<StockChartScreen> {
+  late Future<List<StockHistoryData>> _stockData;
   late Future<Map<String, dynamic>> _stockInfo;
+  String _selectedPeriod = '1mo'; // Varsayılan periyot
+  late String symbol;
 
   // Function to fetch stock data from the API using Dio
-  Future<List<StockData>> fetchStockData(String symbol) async {
+  Future<List<StockHistoryData>> fetchStockData(
+      String symbol, String period) async {
     Dio dio = Dio();
-    final response = await dio.post(
-      'http://10.0.2.2:8000/stock/predict',
-      data: json.encode({'symbol': symbol}),
-      options: Options(
-        headers: {'Content-Type': 'application/json'},
-      ),
+    final response = await dio.get(
+      'http://10.0.2.2:8000/stock/$symbol/history/$period',
     );
 
     if (response.statusCode == 200) {
-      final data = response.data['data'] as List;
-      return data.map((item) => StockData.fromJson(item)).toList();
+      final List<dynamic> data = response.data;
+      return data
+          .map<StockHistoryData>((item) => StockHistoryData.fromMap(item))
+          .toList();
     } else {
-      throw Exception('Failed to load stock data');
+      throw Exception('Hisse verisi yüklenemedi');
     }
   }
 
@@ -43,16 +44,22 @@ class _StockChartScreenState extends State<StockChartScreen> {
     if (response.statusCode == 200) {
       return response.data;
     } else {
-      throw Exception('Failed to load stock info');
+      throw Exception('Hisse bilgisi yüklenemedi');
     }
+  }
+
+  void _updatePeriod(String period) {
+    setState(() {
+      _selectedPeriod = period;
+      _stockData = fetchStockData(symbol, period);
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    // Replace 'DOAS.IS' with the stock symbol you want
-    final symbol = 'DOAS.IS';
-    _stockData = fetchStockData(symbol);
+    symbol = 'PGSUS.IS';
+    _stockData = fetchStockData(symbol, _selectedPeriod);
     _stockInfo = fetchStockInfo(symbol);
   }
 
@@ -60,7 +67,8 @@ class _StockChartScreenState extends State<StockChartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hisse Verisi Grafiği'),
+        leading: const Icon(Icons.arrow_back_ios),
+        title: Text(symbol),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -68,7 +76,7 @@ class _StockChartScreenState extends State<StockChartScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              FutureBuilder<List<StockData>>(
+              FutureBuilder<List<StockHistoryData>>(
                 future: _stockData,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -84,56 +92,38 @@ class _StockChartScreenState extends State<StockChartScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
+              HorizontalPeriodList(
+                selectedPeriod: _selectedPeriod,
+                onPeriodSelected: _updatePeriod,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context).shadowColor.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: FutureBuilder<Map<String, dynamic>>(
-                    future: _stockInfo,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Hata: ${snapshot.error}'));
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(child: Text('Bilgi bulunamadı'));
-                      } else {
-                        final stockInfo = snapshot.data!;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Şirket Adı: ${stockInfo['company_name']}',
-                                style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 8),
-                            Text('Sektör: ${stockInfo['sector']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Endüstri: ${stockInfo['industry']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Güncel Fiyat: ${stockInfo['current_price']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text(
-                                '52 Hafta Yüksek: ${stockInfo['52_week_high']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('52 Hafta Düşük: ${stockInfo['52_week_low']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Piyasa Değeri: ${stockInfo['market_cap']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('F/K Oranı: ${stockInfo['pe_ratio']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text(
-                                'Temettü Verimi: ${stockInfo['dividend_yield']}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Beta: ${stockInfo['beta']}',
-                                style: const TextStyle(fontSize: 16)),
-                          ],
-                        );
-                      }
-                    },
-                  ),
+                padding: const EdgeInsets.all(16.0),
+                child: FutureBuilder<Map<String, dynamic>>(
+                  future: _stockInfo,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Hata: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text('Bilgi bulunamadı'));
+                    } else {
+                      final stockInfo = snapshot.data!;
+                      return StockInfo(stockInfo: stockInfo);
+                    }
+                  },
                 ),
               ),
             ],
