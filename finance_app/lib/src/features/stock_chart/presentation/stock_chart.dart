@@ -86,7 +86,7 @@ class StockChart extends StatelessWidget {
             name: 'Tahmin',
             color: Colors.blue,
             width: 2,
-            dashArray: <double>[5, 5], // Kesikli çizgi
+            dashArray: const <double>[5, 5], // Kesikli çizgi
           ),
       ],
     );

@@ -6,6 +6,8 @@ from services.price_prediction import price_prediction
 from models.stock_symbol import StockSymbol
 
 from services.stock_data import get_stock_history_data
+from services.stock_data import search_stocks
+
 
 router = APIRouter()
 
@@ -45,5 +47,18 @@ def get_stock_history(symbol: str, period: str):
         return stock_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+# API Endpoint: Hisse senedi arama
+@router.get("/search/{query}")
+def search_stocks_endpoint(query: str):
+    try:
+        results = search_stocks(query)
+        if not results:
+            raise HTTPException(status_code=404, detail="Sonuç bulunamadı.")
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 

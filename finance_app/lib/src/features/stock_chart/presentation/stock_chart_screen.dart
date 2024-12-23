@@ -8,7 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class StockChartScreen extends StatefulWidget {
-  const StockChartScreen({super.key});
+  const StockChartScreen({super.key, required this.symbol});
+
+  final String symbol;
 
   @override
   StockChartScreenState createState() => StockChartScreenState();
@@ -18,8 +20,8 @@ class StockChartScreenState extends State<StockChartScreen> {
   late Future<List<StockHistoryData>> _stockData;
   late Future<Map<String, dynamic>> _stockInfo;
   String _selectedPeriod = '1mo'; // Varsayılan periyot
-  late String symbol;
   bool _isPredicting = false; // Tahmin işlemi devam ediyor mu kontrolü için
+  bool _hasPredicted = false; // Tahmin yapılıp yapılmadığını kontrol etmek için
   List<StockData> _predictedData = []; // Tahmin edilen verileri tutmak için
 
   // Function to fetch stock data from the API using Dio
@@ -54,8 +56,9 @@ class StockChartScreenState extends State<StockChartScreen> {
 
   // Fiyat tahmini için API çağrısı
   Future<List<StockData>> _predictPrice() async {
-    if (_isPredicting)
-      return []; // Eğer tahmin zaten devam ediyorsa, işlemi engelle
+    if (_isPredicting || _hasPredicted) {
+      return []; // Eğer tahmin zaten yapıldıysa veya devam ediyorsa, işlemi engelle
+    }
 
     try {
       setState(() {
@@ -65,36 +68,24 @@ class StockChartScreenState extends State<StockChartScreen> {
       Dio dio = Dio();
       final response = await dio.post(
         'http://10.0.2.2:8000/stock/predict',
-        data: {'symbol': symbol},
+        data: {'symbol': widget.symbol},
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
-        print(data);
         final predictions = StockData.fromPredictionList(data);
 
         setState(() {
           _predictedData = predictions; // Tahmin verilerini state'e kaydet
+          _hasPredicted = true; // Tahmin yapıldığını işaretle
         });
-
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Fiyat Tahmini'),
-            content: Text('Tahmini fiyat: ${predictions.last.close} TL'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Tamam'),
-              ),
-            ],
-          ),
-        );
 
         return predictions;
       }
       throw Exception('Tahmin verisi alınamadı');
     } catch (e) {
+      if (!mounted) return [];
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Fiyat tahmini yapılırken hata oluştu')),
       );
@@ -109,16 +100,15 @@ class StockChartScreenState extends State<StockChartScreen> {
   void _updatePeriod(String period) {
     setState(() {
       _selectedPeriod = period;
-      _stockData = fetchStockData(symbol, period);
+      _stockData = fetchStockData(widget.symbol, period);
     });
   }
 
   @override
   void initState() {
     super.initState();
-    symbol = 'PGSUS.IS';
-    _stockData = fetchStockData(symbol, _selectedPeriod);
-    _stockInfo = fetchStockInfo(symbol);
+    _stockData = fetchStockData(widget.symbol, _selectedPeriod);
+    _stockInfo = fetchStockInfo(widget.symbol);
   }
 
   Widget _buildShimmerChart() {
@@ -204,16 +194,21 @@ class StockChartScreenState extends State<StockChartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const Icon(Icons.arrow_back_ios),
-        title: Text(symbol),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios),
+        ),
+        title: Text(widget.symbol),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.auto_graph),
-            onPressed: _isPredicting
-                ? null
-                : _predictPrice, // Tahmin devam ediyorsa butonu devre dışı bırak
-            tooltip: 'Fiyat Tahmini',
-          ),
+          _isPredicting
+              ? CircularProgressIndicator()
+              : IconButton(
+                  icon: const Icon(Icons.auto_graph),
+                  onPressed: _hasPredicted
+                      ? null
+                      : _predictPrice, // Tahmin yapıldıysa butonu devre dışı bırak
+                  tooltip: _hasPredicted ? 'Tahmin Yapıldı' : 'Fiyat Tahmini',
+                ),
         ],
       ),
       body: SingleChildScrollView(
