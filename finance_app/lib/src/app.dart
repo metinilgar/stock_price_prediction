@@ -1,5 +1,6 @@
 import 'package:finance_app/src/features/authentication/data/auth_repository.dart';
 import 'package:finance_app/src/features/authentication/presentation/screens/sign_in_screen.dart';
+import 'package:finance_app/src/features/navigation_menu/presentation/navigation_menu.dart';
 import 'package:finance_app/src/features/search_stocks/presentation/search_screen.dart';
 import 'package:finance_app/src/utils/theme/theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -32,7 +33,7 @@ class MainApp extends ConsumerWidget {
 
           if (snapshot.hasData) {
             // Kullanıcı giriş yapmışsa StockChartScreen göster
-            return const SearchScreen();
+            return const NavigationMenu();
           } else {
             // Kullanıcı giriş yapmamışsa SignInScreen göster
             return const SignInScreen();

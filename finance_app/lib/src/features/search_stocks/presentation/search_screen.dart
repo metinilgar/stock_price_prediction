@@ -54,11 +54,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Hisse Senedi Ara'),
-      ),
-      body: Column(
+    return SafeArea(
+      child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
