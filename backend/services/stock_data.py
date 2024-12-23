@@ -23,3 +23,16 @@ def get_stock_data(symbol: str):
         return stock_data
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+
+# Yardımcı fonksiyonlar
+def get_stock_history_data(symbol, period):
+    stock = yf.Ticker(symbol)
+    historical_data = stock.history(period=period)
+    historical_data.reset_index(inplace=True)
+
+    # Veriyi JSON formatına dönüştür
+    historical_data['Date'] = historical_data['Date'].astype(str)
+    json_data = historical_data[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']].to_dict(orient='records')
+    
+    return json_data
