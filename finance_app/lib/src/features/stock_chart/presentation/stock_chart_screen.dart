@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:finance_app/src/features/stock_chart/models/stock_data.dart';
 import 'package:finance_app/src/features/stock_chart/models/stock_history_data.dart';
 import 'package:finance_app/src/features/stock_chart/presentation/horizontal_period_list.dart';
 import 'package:finance_app/src/features/stock_chart/presentation/stock_chart.dart';
@@ -18,6 +19,8 @@ class StockChartScreenState extends State<StockChartScreen> {
   late Future<Map<String, dynamic>> _stockInfo;
   String _selectedPeriod = '1mo'; // Varsayılan periyot
   late String symbol;
+  bool _isPredicting = false; // Tahmin işlemi devam ediyor mu kontrolü için
+  List<StockData> _predictedData = []; // Tahmin edilen verileri tutmak için
 
   // Function to fetch stock data from the API using Dio
   Future<List<StockHistoryData>> fetchStockData(
@@ -46,6 +49,60 @@ class StockChartScreenState extends State<StockChartScreen> {
       return response.data;
     } else {
       throw Exception('Hisse bilgisi yüklenemedi');
+    }
+  }
+
+  // Fiyat tahmini için API çağrısı
+  Future<List<StockData>> _predictPrice() async {
+    if (_isPredicting)
+      return []; // Eğer tahmin zaten devam ediyorsa, işlemi engelle
+
+    try {
+      setState(() {
+        _isPredicting = true; // Tahmin başladı
+      });
+
+      Dio dio = Dio();
+      final response = await dio.post(
+        'http://10.0.2.2:8000/stock/predict',
+        data: {'symbol': symbol},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        print(data);
+        final predictions = StockData.fromPredictionList(data);
+
+        setState(() {
+          _predictedData = predictions; // Tahmin verilerini state'e kaydet
+        });
+
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Fiyat Tahmini'),
+            content: Text('Tahmini fiyat: ${predictions.last.close} TL'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Tamam'),
+              ),
+            ],
+          ),
+        );
+
+        return predictions;
+      }
+      throw Exception('Tahmin verisi alınamadı');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Fiyat tahmini yapılırken hata oluştu')),
+      );
+      rethrow;
+    } finally {
+      setState(() {
+        _isPredicting = false; // Tahmin bitti
+      });
     }
   }
 
@@ -149,6 +206,15 @@ class StockChartScreenState extends State<StockChartScreen> {
       appBar: AppBar(
         leading: const Icon(Icons.arrow_back_ios),
         title: Text(symbol),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_graph),
+            onPressed: _isPredicting
+                ? null
+                : _predictPrice, // Tahmin devam ediyorsa butonu devre dışı bırak
+            tooltip: 'Fiyat Tahmini',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -167,7 +233,10 @@ class StockChartScreenState extends State<StockChartScreen> {
                     return const Center(child: Text('Veri bulunamadı'));
                   } else {
                     final stockData = snapshot.data!;
-                    return StockChart(stockData: stockData);
+                    return StockChart(
+                      stockData: stockData,
+                      predictedData: _predictedData,
+                    );
                   }
                 },
               ),

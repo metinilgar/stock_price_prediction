@@ -132,17 +132,13 @@ def price_prediction(symbol: str):
 
         # 6. Gerçek ve tahmini verileri birleştirme
         future_data = pd.DataFrame({
-            "Date": future_dates,
+            "Date": [date.strftime("%Y-%m-%d") for date in future_dates],
             "Close": future_predictions.flatten()
         })
-        historical_data = historical_data[['Date', 'Close']]
-        combined_data = pd.concat([historical_data, future_data], ignore_index=True)
+        print(future_data.to_dict(orient="records"))
 
         # 7. Sonuçları döndürme
-        return {
-            "symbol": symbol,
-            "data": combined_data.to_dict(orient="records")
-        }
+        return future_data.to_dict(orient="records")
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

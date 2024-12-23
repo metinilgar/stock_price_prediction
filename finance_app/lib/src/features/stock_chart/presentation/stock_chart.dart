@@ -1,3 +1,4 @@
+import 'package:finance_app/src/features/stock_chart/models/stock_data.dart';
 import 'package:finance_app/src/features/stock_chart/models/stock_history_data.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -6,9 +7,11 @@ class StockChart extends StatelessWidget {
   const StockChart({
     super.key,
     required this.stockData,
+    required this.predictedData,
   });
 
   final List<StockHistoryData> stockData;
+  final List<StockData> predictedData;
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +22,14 @@ class StockChart extends StatelessWidget {
     for (var data in stockData) {
       if (data.low < minValue) minValue = data.low;
       if (data.high > maxValue) maxValue = data.high;
+    }
+
+    // Tahmin verilerini de min/max hesaplamasına dahil et
+    if (predictedData.isNotEmpty) {
+      for (var data in predictedData) {
+        if (data.close < minValue) minValue = data.close;
+        if (data.close > maxValue) maxValue = data.close;
+      }
     }
 
     // Aralık için tampon ekle
@@ -67,6 +78,16 @@ class StockChart extends StatelessWidget {
           bearColor: Colors.red,
           bullColor: Colors.green,
         ),
+        if (predictedData.isNotEmpty)
+          LineSeries<StockData, DateTime>(
+            dataSource: predictedData,
+            xValueMapper: (StockData data, _) => data.date,
+            yValueMapper: (StockData data, _) => data.close,
+            name: 'Tahmin',
+            color: Colors.blue,
+            width: 2,
+            dashArray: <double>[5, 5], // Kesikli çizgi
+          ),
       ],
     );
   }
