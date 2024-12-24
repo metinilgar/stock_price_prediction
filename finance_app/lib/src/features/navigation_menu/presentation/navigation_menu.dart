@@ -1,5 +1,6 @@
 import 'package:finance_app/src/features/navigation_menu/presentation/controllers/navigation_controller.dart';
 import 'package:finance_app/src/features/navigation_menu/presentation/home_screen.dart';
+import 'package:finance_app/src/features/profile/presentation/profile_screen.dart';
 import 'package:finance_app/src/features/search_stocks/presentation/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,12 +10,13 @@ class NavigationMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    // final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     int selectedIndex = ref.watch(navigationControllerProvider);
 
     const List<Widget> screens = [
       HomeScreen(),
       SearchScreen(),
+      ProfileScreen(),
     ];
 
     const List<NavigationDestination> destinations = [
@@ -30,6 +32,11 @@ class NavigationMenu extends ConsumerWidget {
           shadows: <Shadow>[Shadow(blurRadius: 2.0)],
         ),
         label: 'Search',
+      ),
+      NavigationDestination(
+        icon: Icon(Icons.person_outline),
+        selectedIcon: Icon(Icons.person),
+        label: 'Profile',
       ),
     ];
 

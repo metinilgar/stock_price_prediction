@@ -1,5 +1,7 @@
 import 'package:finance_app/src/utils/constants/colors.dart';
+import 'package:finance_app/src/utils/theme/custom_theme/app_bar_theme.dart';
 import 'package:finance_app/src/utils/theme/custom_theme/elevated_button_theme.dart';
+import 'package:finance_app/src/utils/theme/custom_theme/navigation_bar_theme.dart';
 import 'package:flutter/material.dart';
 
 class KAppTheme {
@@ -17,10 +19,10 @@ class KAppTheme {
     ),
 
     // AppBar theme
-    // appBarTheme: KAppBarTheme.kLightAppBarTheme,
+    appBarTheme: KAppBarTheme.kLightAppBarTheme,
 
     // Navigation bar theme
-    // navigationBarTheme: KNavigationBarTheme.kLightNavigationBarTheme,
+    navigationBarTheme: KNavigationBarTheme.kLightNavigationBarTheme,
 
     // ElevatedButton theme
     elevatedButtonTheme: KElevatedButtonTheme.kLightElevatedButtonTheme,

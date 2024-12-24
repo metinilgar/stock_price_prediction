@@ -201,7 +201,7 @@ class StockChartScreenState extends State<StockChartScreen> {
         title: Text(widget.symbol),
         actions: [
           _isPredicting
-              ? CircularProgressIndicator()
+              ? const CircularProgressIndicator()
               : IconButton(
                   icon: const Icon(Icons.auto_graph),
                   onPressed: _hasPredicted
