@@ -40,10 +40,10 @@ class KAppTheme {
     ),
 
     // AppBar theme
-    // appBarTheme: KAppBarTheme.kDarkAppBarTheme,
+    appBarTheme: KAppBarTheme.kDarkAppBarTheme,
 
     // Navigation bar theme
-    // navigationBarTheme: KNavigationBarTheme.kDarkNavigationBarTheme,
+    navigationBarTheme: KNavigationBarTheme.kDarkNavigationBarTheme,
 
     // ElevatedButton theme
     elevatedButtonTheme: KElevatedButtonTheme.kDarkElevatedButtonTheme,
