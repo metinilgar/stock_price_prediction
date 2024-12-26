@@ -8,7 +8,7 @@ class HomeSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    Widget _buildSliderItem({
+    Widget buildSliderItem({
       required ThemeData theme,
       required Color startColor,
       required Color endColor,
@@ -49,7 +49,7 @@ class HomeSlider extends StatelessWidget {
     }
 
     final items = [
-      _buildSliderItem(
+      buildSliderItem(
         theme: theme,
         startColor: theme.colorScheme.primary,
         endColor: theme.colorScheme.primaryContainer,
@@ -57,7 +57,7 @@ class HomeSlider extends StatelessWidget {
         title: 'Hoş Geldiniz',
         subtitle: 'Finansal Takip Uygulaması',
       ),
-      _buildSliderItem(
+      buildSliderItem(
         theme: theme,
         startColor: theme.colorScheme.secondary,
         endColor: theme.colorScheme.secondaryContainer,
@@ -65,7 +65,7 @@ class HomeSlider extends StatelessWidget {
         title: 'Piyasaları Takip Edin',
         subtitle: 'Anlık Borsa Verileri',
       ),
-      _buildSliderItem(
+      buildSliderItem(
         theme: theme,
         startColor: theme.colorScheme.tertiary,
         endColor: theme.colorScheme.tertiaryContainer,

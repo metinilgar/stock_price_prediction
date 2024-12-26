@@ -1,4 +1,5 @@
 import 'package:finance_app/src/features/authentication/data/auth_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_controller.g.dart';
@@ -6,7 +7,9 @@ part 'auth_controller.g.dart';
 @riverpod
 class AuthController extends _$AuthController {
   @override
-  FutureOr<void> build() {}
+  FutureOr<User?> build() {
+    return FirebaseAuth.instance.currentUser;
+  }
 
   Future<void> signIn({
     required String email,
@@ -17,10 +20,10 @@ class AuthController extends _$AuthController {
     state = const AsyncValue.loading();
 
     state = await AsyncValue.guard(
-      () => authRepository.signIn(
-        email: email,
-        password: password,
-      ),
+      () async {
+        await authRepository.signIn(email: email, password: password);
+        return FirebaseAuth.instance.currentUser;
+      },
     );
   }
 
@@ -34,11 +37,11 @@ class AuthController extends _$AuthController {
     state = const AsyncValue.loading();
 
     state = await AsyncValue.guard(
-      () => authRepository.signUp(
-        email: email,
-        password: password,
-        name: name,
-      ),
+      () async {
+        await authRepository.signUp(
+            email: email, password: password, name: name);
+        return FirebaseAuth.instance.currentUser;
+      },
     );
   }
 
@@ -47,6 +50,11 @@ class AuthController extends _$AuthController {
 
     state = const AsyncValue.loading();
 
-    state = await AsyncValue.guard(() => authRepository.signOut());
+    state = await AsyncValue.guard(
+      () async {
+        await authRepository.signOut();
+        return FirebaseAuth.instance.currentUser;
+      },
+    );
   }
 }

@@ -1,14 +1,16 @@
 import 'package:finance_app/src/features/profile/presentation/widgets/profile_header.dart';
+import 'package:finance_app/src/features/authentication/presentation/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    return Scaffold(
-      body: CustomScrollView(
+    return SafeArea(
+      child: CustomScrollView(
         slivers: [
           const ProfileHeader(),
           SliverToBoxAdapter(
@@ -85,7 +87,8 @@ class ProfileScreen extends StatelessWidget {
                         icon: Icons.logout,
                         title: 'Çıkış Yap',
                         subtitle: 'Hesabınızdan çıkış yapın',
-                        onTap: () {},
+                        onTap: () =>
+                            ref.read(authControllerProvider.notifier).signOut(),
                         textColor: theme.colorScheme.error,
                       ),
                     ],
