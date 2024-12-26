@@ -1,7 +1,48 @@
+import 'package:finance_app/src/features/navigation_menu/data/market_service.dart';
+import 'package:finance_app/src/features/navigation_menu/models/market_data.dart';
+import 'package:finance_app/src/utils/constants/network_constants.dart';
 import 'package:flutter/material.dart';
 
-class MarketOverview extends StatelessWidget {
+class MarketOverview extends StatefulWidget {
   const MarketOverview({super.key});
+
+  @override
+  State<MarketOverview> createState() => _MarketOverviewState();
+}
+
+class _MarketOverviewState extends State<MarketOverview> {
+  late final MarketService _marketService;
+  MarketOverviewData? _marketData;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _marketService = MarketService(baseUrl: KNetworkConstants.kBaseUrl);
+    _loadMarketData();
+  }
+
+  Future<void> _loadMarketData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      final data = await _marketService.getMarketOverview();
+
+      setState(() {
+        _marketData = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -9,44 +50,82 @@ class MarketOverview extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Piyasa Özeti',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Piyasa Özeti',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (!_isLoading)
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: _loadMarketData,
+              ),
+          ],
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 160,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _buildMarketCard(
-                context,
-                title: 'BIST 100',
-                value: '7.842,32',
-                change: '+1,24%',
-                isPositive: true,
-              ),
-              const SizedBox(width: 12),
-              _buildMarketCard(
-                context,
-                title: 'Dolar/TL',
-                value: '31,24',
-                change: '-0,35%',
-                isPositive: false,
-              ),
-              const SizedBox(width: 12),
-              _buildMarketCard(
-                context,
-                title: 'Euro/TL',
-                value: '33,85',
-                change: '+0,12%',
-                isPositive: true,
-              ),
-            ],
+        if (_isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (_error != null)
+          Center(
+            child: Column(
+              children: [
+                Text('Hata: $_error'),
+                ElevatedButton(
+                  onPressed: _loadMarketData,
+                  child: const Text('Tekrar Dene'),
+                ),
+              ],
+            ),
+          )
+        else
+          SizedBox(
+            height: 160,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                if (_marketData?.bist100 != null)
+                  _buildMarketCard(
+                    context,
+                    title: 'BIST 100',
+                    value:
+                        _marketData!.bist100!.currentPrice.toStringAsFixed(2),
+                    change:
+                        '${_marketData!.bist100!.change.toStringAsFixed(2)}%',
+                    isPositive: _marketData!.bist100!.change > 0,
+                  ),
+                if (_marketData?.usdTry != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: _buildMarketCard(
+                      context,
+                      title: 'Dolar/TL',
+                      value:
+                          _marketData!.usdTry!.currentPrice.toStringAsFixed(2),
+                      change:
+                          '${_marketData!.usdTry!.change.toStringAsFixed(2)}%',
+                      isPositive: _marketData!.usdTry!.change > 0,
+                    ),
+                  ),
+                if (_marketData?.eurTry != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: _buildMarketCard(
+                      context,
+                      title: 'Euro/TL',
+                      value:
+                          _marketData!.eurTry!.currentPrice.toStringAsFixed(2),
+                      change:
+                          '${_marketData!.eurTry!.change.toStringAsFixed(2)}%',
+                      isPositive: _marketData!.eurTry!.change > 0,
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

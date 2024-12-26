@@ -7,6 +7,7 @@ from models.stock_symbol import StockSymbol
 
 from services.stock_data import get_stock_history_data
 from services.stock_data import search_stocks
+from services.stock_data import get_market_overview
 
 
 router = APIRouter()
@@ -57,6 +58,17 @@ def search_stocks_endpoint(query: str):
         if not results:
             raise HTTPException(status_code=404, detail="Sonuç bulunamadı.")
         return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# API Endpoint: Piyasa genel görünümü
+@router.get("/market/overview")
+def get_market_overview_endpoint():
+    try:
+        market_data = get_market_overview()
+        if not market_data:
+            raise HTTPException(status_code=404, detail="Piyasa verileri alınamadı.")
+        return market_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

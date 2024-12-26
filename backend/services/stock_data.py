@@ -64,3 +64,46 @@ def search_stocks(query: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+def get_market_overview():
+    try:
+        # Takip edilecek sembollerin listesi
+        symbols = {
+            "BIST100": "XU100.IS",
+            "USD/TRY": "USDTRY=X",
+            "EUR/TRY": "EURTRY=X",
+        }
+        
+        market_data = {}
+        
+        for market_name, symbol in symbols.items():
+            ticker = yf.Ticker(symbol)
+            current_data = ticker.history(period='1d')
+            
+            if not current_data.empty:
+                # Numpy değerlerini native Python tiplerine dönüştür
+                close_price = float(current_data['Close'].iloc[-1])
+                open_price = float(current_data['Open'].iloc[0])
+                high_price = float(current_data['High'].iloc[-1])
+                low_price = float(current_data['Low'].iloc[-1])
+                
+                # Volume değeri varsa dönüştür
+                volume = None
+                if 'Volume' in current_data:
+                    volume = int(current_data['Volume'].iloc[-1])
+                
+                # Değişim yüzdesini hesapla
+                change_percentage = ((close_price - open_price) / open_price) * 100
+                
+                market_data[market_name] = {
+                    "symbol": symbol,
+                    "current_price": close_price,
+                    "change": change_percentage,
+                    "high": high_price,
+                    "low": low_price,
+                    "volume": volume
+                }
+            
+        return market_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
