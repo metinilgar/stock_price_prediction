@@ -1,5 +1,6 @@
 from fastapi import APIRouter 
 from fastapi import  HTTPException
+from typing import List
 
 from services.stock_data import get_stock_data
 from services.price_prediction import price_prediction
@@ -69,6 +70,28 @@ def get_market_overview_endpoint():
         if not market_data:
             raise HTTPException(status_code=404, detail="Piyasa verileri alınamadı.")
         return market_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# API Endpoint: Takip edilen hisselerin bilgileri
+@router.post("/followed")
+def get_followed_stocks(symbols: List[str]):
+    try:
+        followed_stocks = []
+        for symbol in symbols:
+            stock_data = get_stock_data(symbol)
+            stock_data['symbol'] = symbol
+            if stock_data:
+                # Değişim yüzdesini hesapla
+                change = stock_data.get('current_price', 0) - stock_data.get('previous_close', 0)
+                change_percent = (change * stock_data.get('previous_close', 1)) / 100
+                stock_data['change'] = change
+                stock_data['changePercent'] = change_percent
+                followed_stocks.append(stock_data)
+        
+        if not followed_stocks:
+            raise HTTPException(status_code=404, detail="Takip edilen hisse verileri bulunamadı.")
+        return followed_stocks
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

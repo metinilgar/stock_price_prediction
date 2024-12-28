@@ -52,3 +52,29 @@ class MarketOverviewData {
     );
   }
 }
+
+class FollowedStock {
+  final String symbol;
+  final double price;
+  final double change;
+  final double changePercent;
+  final String currency;
+
+  FollowedStock({
+    required this.symbol,
+    required this.price,
+    required this.change,
+    required this.changePercent,
+    required this.currency,
+  });
+
+  factory FollowedStock.fromMap(Map<String, dynamic> map) {
+    return FollowedStock(
+      symbol: map['symbol'] ?? '',
+      price: (map['current_price'] ?? 0.0).toDouble(),
+      change: (map['change'] ?? 0.0).toDouble(),
+      changePercent: (map['changePercent'] ?? 0.0).toDouble(),
+      currency: map['currency'] ?? 'TRY',
+    );
+  }
+}

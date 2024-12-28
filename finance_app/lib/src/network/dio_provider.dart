@@ -9,7 +9,7 @@ part 'dio_provider.g.dart';
 Dio dio(Ref ref) {
   return Dio(
     BaseOptions(
-        baseUrl: KNetworkConstants.kBaseUrl,
+        baseUrl: NetworkConstants.baseUrl,
         connectTimeout: const Duration(seconds: 20),
         receiveTimeout: const Duration(seconds: 20),
         responseType: ResponseType.json),

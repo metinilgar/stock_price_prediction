@@ -2,6 +2,7 @@ import 'package:finance_app/src/features/navigation_menu/data/market_service.dar
 import 'package:finance_app/src/features/navigation_menu/models/market_data.dart';
 import 'package:finance_app/src/utils/constants/network_constants.dart';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 class MarketOverview extends StatefulWidget {
   const MarketOverview({super.key});
@@ -19,7 +20,7 @@ class _MarketOverviewState extends State<MarketOverview> {
   @override
   void initState() {
     super.initState();
-    _marketService = MarketService(baseUrl: KNetworkConstants.kBaseUrl);
+    _marketService = MarketService(baseUrl: NetworkConstants.baseUrl);
     _loadMarketData();
   }
 
@@ -68,7 +69,23 @@ class _MarketOverviewState extends State<MarketOverview> {
         ),
         const SizedBox(height: 16),
         if (_isLoading)
-          const Center(child: CircularProgressIndicator())
+          SizedBox(
+            height: 160,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                _buildShimmerCard(context),
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: _buildShimmerCard(context),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: _buildShimmerCard(context),
+                ),
+              ],
+            ),
+          )
         else if (_error != null)
           Center(
             child: Column(
@@ -127,6 +144,47 @@ class _MarketOverviewState extends State<MarketOverview> {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildShimmerCard(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        width: 180,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 20,
+              color: Colors.white,
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: 120,
+              height: 30,
+              color: Colors.white,
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: 80,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
