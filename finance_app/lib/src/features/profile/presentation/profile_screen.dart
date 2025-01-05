@@ -1,5 +1,6 @@
 import 'package:finance_app/src/features/profile/presentation/widgets/profile_header.dart';
 import 'package:finance_app/src/features/authentication/presentation/controllers/auth_controller.dart';
+import 'package:finance_app/src/features/authentication/presentation/screens/sign_in_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,6 +10,19 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+
+    ref.listen<AsyncValue>(authControllerProvider, (previous, next) {
+      // Çıkış yapma başarılı olduğunda (kullanıcı null olduğunda) giriş sayfasına yönlendir
+      if (!next.isLoading && !next.hasError && next.value == null) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => const SignInScreen(),
+          ),
+          (route) => false,
+        );
+      }
+    });
+
     return SafeArea(
       child: CustomScrollView(
         slivers: [

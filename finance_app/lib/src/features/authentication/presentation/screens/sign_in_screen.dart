@@ -2,6 +2,7 @@ import 'package:finance_app/src/features/authentication/presentation/controllers
 import 'package:finance_app/src/features/authentication/presentation/controllers/validation_controller.dart';
 import 'package:finance_app/src/features/authentication/presentation/screens/sign_up_screen.dart';
 import 'package:finance_app/src/utils/extensions/async_value_ui.dart';
+import 'package:finance_app/src/features/navigation_menu/presentation/navigation_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,8 +17,19 @@ class SignInScreen extends ConsumerWidget {
     String? email;
     String? password;
 
-    ref.listen<AsyncValue>(authControllerProvider, (_, state) {
-      state.showAlertDialogOnError(context);
+    ref.listen<AsyncValue>(authControllerProvider, (previous, next) {
+      // Hata durumunda dialog göster
+      next.showAlertDialogOnError(context);
+
+      // Başarılı durumda ve kullanıcı varsa ana sayfaya yönlendir
+      if (!next.isLoading && !next.hasError && next.hasValue) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => const NavigationMenu(),
+          ),
+          (route) => false,
+        );
+      }
     });
 
     return Scaffold(
@@ -94,24 +106,37 @@ class SignInScreen extends ConsumerWidget {
                   const SizedBox(height: 40),
 
                   // ElevatedButton for sign in
-                  ElevatedButton(
-                    onPressed: () {
-                      if (formKey.currentState!.validate()) {
-                        formKey.currentState!.save();
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final authState = ref.watch(authControllerProvider);
+                      return ElevatedButton(
+                        onPressed: authState.isLoading
+                            ? null
+                            : () {
+                                if (formKey.currentState!.validate()) {
+                                  formKey.currentState!.save();
 
-                        ref.read(authControllerProvider.notifier).signIn(
-                              email: email!,
-                              password: password!,
-                            );
-                      }
+                                  ref
+                                      .read(authControllerProvider.notifier)
+                                      .signIn(
+                                          email: email!, password: password!);
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(180, 50),
+                        ),
+                        child: authState.isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(),
+                              )
+                            : const Text(
+                                'SIGN IN',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                      );
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(180, 50),
-                    ),
-                    child: const Text(
-                      'SIGN IN',
-                      style: TextStyle(fontSize: 18),
-                    ),
                   ),
                 ],
               ),

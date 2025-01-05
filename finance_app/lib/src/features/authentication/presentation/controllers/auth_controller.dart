@@ -21,8 +21,11 @@ class AuthController extends _$AuthController {
 
     state = await AsyncValue.guard(
       () async {
-        await authRepository.signIn(email: email, password: password);
-        return FirebaseAuth.instance.currentUser;
+        final userCredential = await authRepository.signIn(
+          email: email,
+          password: password,
+        );
+        return userCredential.user;
       },
     );
   }
@@ -38,8 +41,11 @@ class AuthController extends _$AuthController {
 
     state = await AsyncValue.guard(
       () async {
-        await authRepository.signUp(
-            email: email, password: password, name: name);
+        final userCredential = await authRepository.signUp(
+          email: email,
+          password: password,
+          name: name,
+        );
         return FirebaseAuth.instance.currentUser;
       },
     );
@@ -53,7 +59,7 @@ class AuthController extends _$AuthController {
     state = await AsyncValue.guard(
       () async {
         await authRepository.signOut();
-        return FirebaseAuth.instance.currentUser;
+        return null;
       },
     );
   }

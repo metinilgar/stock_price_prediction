@@ -19,7 +19,7 @@ class AuthRepository {
   User? get currentUser => _firebaseAuth.currentUser;
 
   // Sign up with email and password
-  Future<void> signUp({
+  Future<UserCredential> signUp({
     required String email,
     required String password,
     required String name,
@@ -30,6 +30,8 @@ class AuthRepository {
         password: password,
       );
 
+      await userCredential.user!.updateDisplayName(name);
+
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'id': userCredential.user!.uid,
         'name': name,
@@ -39,7 +41,9 @@ class AuthRepository {
             'https://github.com/user-attachments/assets/66b1b7dd-1b25-4772-9096-148cebc21eaf',
       });
 
-      await currentUser!.updateDisplayName(name);
+      await userCredential.user!.reload();
+
+      return userCredential;
     } on FirebaseAuthException {
       rethrow;
     } catch (e) {
@@ -48,9 +52,10 @@ class AuthRepository {
   }
 
   // Sign in with email and password
-  Future<void> signIn({required String email, required String password}) async {
+  Future<UserCredential> signIn(
+      {required String email, required String password}) async {
     try {
-      await _firebaseAuth.signInWithEmailAndPassword(
+      return await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );

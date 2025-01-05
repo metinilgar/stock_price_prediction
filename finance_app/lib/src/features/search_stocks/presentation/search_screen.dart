@@ -42,9 +42,9 @@ class _SearchScreenState extends State<SearchScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Arama sırasında bir hata oluştu')),
-      );
+      setState(() {
+        _searchResults = [];
+      });
     } finally {
       setState(() {
         _isLoading = false;

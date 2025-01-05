@@ -11,7 +11,7 @@ from tensorflow.keras.optimizers import Adam
 # Yardımcı fonksiyonlar
 def get_stock_price_data(symbol):
     stock = yf.Ticker(symbol)
-    historical_data = stock.history(period="5y")
+    historical_data = stock.history(period="2y")
     historical_data.reset_index(inplace=True)
     return historical_data
 
@@ -23,7 +23,7 @@ def str_to_datetime(s):
 def df_to_windowed_df(dataframe, first_date_str, last_date_str, n=3):
     first_date = str_to_datetime(first_date_str)
     last_date = str_to_datetime(last_date_str)
-    target_date = first_date + datetime.timedelta(days=n+2)
+    target_date = first_date + datetime.timedelta(days=n+3)
 
     dates = []
     X, Y = [], []
@@ -135,7 +135,6 @@ def price_prediction(symbol: str):
             "Date": [date.strftime("%Y-%m-%d") for date in future_dates],
             "Close": future_predictions.flatten()
         })
-        print(future_data.to_dict(orient="records"))
 
         # 7. Sonuçları döndürme
         return future_data.to_dict(orient="records")
